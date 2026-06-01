@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KitchenHub Food Ordering</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Multi-vendor food ordering</p>
+        <h1>KitchenHub</h1>
+      </div>
+      <div class="header-actions">
+        <span id="sessionLabel" class="session-label">Not signed in</span>
+        <a class="docs-link" href="/api-docs">Swagger</a>
+        <button id="logoutBtn" class="icon-btn hidden" type="button" title="Logout">Logout</button>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="auth-panel" id="authPanel">
+        <div class="auth-copy">
+          <img
+            src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80"
+            alt="Fresh plated food"
+          />
+          <div>
+            <p class="eyebrow">Live ordering workspace</p>
+            <h2>Order, coordinate kitchens, and track delivery from one screen.</h2>
+          </div>
+        </div>
+
+        <form id="authForm" class="form-card">
+          <div class="segmented">
+            <button class="segment active" type="button" data-auth-mode="login">Login</button>
+            <button class="segment" type="button" data-auth-mode="register">Register</button>
+          </div>
+          <p id="authHelp" class="meta">Login requires an existing account with the correct password.</p>
+          <label id="nameField" class="hidden">
+            Name
+            <input id="authName" name="name" type="text" placeholder="Only needed for register" />
+          </label>
+          <label>
+            Email
+            <input id="authEmail" name="email" type="email" required placeholder="vendor@example.com" />
+          </label>
+          <label>
+            Password
+            <input id="authPassword" name="password" type="password" required placeholder="secret123" />
+          </label>
+          <label id="roleField" class="hidden">
+            Role
+            <select id="authRole" name="role">
+              <option value="customer">customer</option>
+              <option value="vendor">vendor</option>
+              <option value="kitchen">kitchen</option>
+              <option value="delivery">delivery</option>
+            </select>
+          </label>
+          <button id="authSubmitBtn" class="primary-btn" type="submit">Login</button>
+        </form>
+      </section>
+
+      <section id="workspace" class="workspace hidden">
+        <nav class="tabs">
+          <button class="tab active" type="button" data-tab="browse">Browse</button>
+          <button class="tab" type="button" data-tab="cart">Cart</button>
+          <button class="tab" type="button" data-tab="orders">Orders</button>
+          <button class="tab" type="button" data-tab="vendor">Vendor</button>
+          <button class="tab" type="button" data-tab="ops">Kitchen & Delivery</button>
+        </nav>
+
+        <section class="tab-panel active" id="browsePanel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Restaurants</p>
+              <h2>Browse open kitchens</h2>
+            </div>
+            <button id="refreshRestaurantsBtn" class="secondary-btn" type="button">Refresh</button>
+          </div>
+          <div class="content-grid">
+            <div id="restaurantList" class="card-grid"></div>
+            <div class="menu-column">
+              <div class="section-head compact">
+                <div>
+                  <p class="eyebrow">Menu</p>
+                  <h3 id="menuTitle">Select a restaurant</h3>
+                </div>
+              </div>
+              <div id="menuList" class="stack"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="cartPanel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Checkout</p>
+              <h2>Your cart</h2>
+            </div>
+            <button id="refreshCartBtn" class="secondary-btn" type="button">Refresh</button>
+          </div>
+          <div class="two-column">
+            <div id="cartList" class="stack"></div>
+            <form id="orderForm" class="form-card">
+              <h3>Delivery address</h3>
+              <label>Street <input name="street" required placeholder="MG Road" /></label>
+              <label>City <input name="city" required placeholder="Bengaluru" /></label>
+              <label>State <input name="state" placeholder="Karnataka" /></label>
+              <label>Postal code <input name="postalCode" placeholder="560001" /></label>
+              <button class="primary-btn" type="submit">Place order</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="ordersPanel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Tracking</p>
+              <h2>My orders</h2>
+            </div>
+            <button id="refreshOrdersBtn" class="secondary-btn" type="button">Refresh</button>
+          </div>
+          <div id="ordersList" class="stack"></div>
+        </section>
+
+        <section class="tab-panel" id="vendorPanel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Vendor tools</p>
+              <h2>Create restaurants and menu items</h2>
+            </div>
+          </div>
+          <div class="two-column">
+            <form id="restaurantForm" class="form-card">
+              <h3>New restaurant</h3>
+              <label>Name <input name="name" required placeholder="Spice Garden" /></label>
+              <label>Description <textarea name="description" placeholder="Fresh Indian meals"></textarea></label>
+              <label>Cuisines <input name="cuisineTypes" placeholder="Indian, North Indian" /></label>
+              <label>Phone <input name="phone" required placeholder="+919888888888" /></label>
+              <label>Street <input name="street" required placeholder="MG Road" /></label>
+              <label>City <input name="city" required placeholder="Bengaluru" /></label>
+              <label>Image URL <input name="imageUrl" placeholder="https://images.unsplash.com/..." /></label>
+              <button class="primary-btn" type="submit">Create restaurant</button>
+            </form>
+
+            <form id="menuForm" class="form-card">
+              <h3>New menu item</h3>
+              <p id="lastRestaurantHint" class="meta">Create or select a restaurant first. Its ID stays here while you add more items.</p>
+              <label>Restaurant ID <input name="restaurantId" required placeholder="Paste restaurant _id" /></label>
+              <label>Name <input name="name" required placeholder="Paneer Butter Masala" /></label>
+              <label>Description <textarea name="description" placeholder="Creamy paneer curry"></textarea></label>
+              <label>Category <input name="category" required placeholder="Main Course" /></label>
+              <label>Price <input name="price" required type="number" min="0" step="1" placeholder="249" /></label>
+              <label>Preparation minutes <input name="preparationTimeMinutes" type="number" min="1" value="20" /></label>
+              <label class="check-row"><input name="isVegetarian" type="checkbox" checked /> Vegetarian</label>
+              <button class="primary-btn" type="submit">Create menu item</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="opsPanel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Live operations</p>
+              <h2>Kitchen and delivery updates</h2>
+            </div>
+          </div>
+          <div class="two-column">
+            <form id="kitchenForm" class="form-card">
+              <h3>Kitchen status</h3>
+              <label>Order ID <input name="orderId" required placeholder="Paste order _id" /></label>
+              <label>
+                Status
+                <select name="status">
+                  <option value="queued">queued</option>
+                  <option value="accepted">accepted</option>
+                  <option value="preparing">preparing</option>
+                  <option value="ready">ready</option>
+                </select>
+              </label>
+              <label>Note <input name="note" placeholder="Started cooking" /></label>
+              <button class="primary-btn" type="submit">Update kitchen</button>
+            </form>
+
+            <form id="deliveryForm" class="form-card">
+              <h3>Delivery status</h3>
+              <label>Order ID <input name="orderId" required placeholder="Paste order _id" /></label>
+              <label>
+                Status
+                <select name="status">
+                  <option value="pending">pending</option>
+                  <option value="assigned">assigned</option>
+                  <option value="picked_up">picked_up</option>
+                  <option value="nearby">nearby</option>
+                  <option value="delivered">delivered</option>
+                </select>
+              </label>
+              <label>Note <input name="note" placeholder="Rider nearby" /></label>
+              <button class="primary-btn" type="submit">Update delivery</button>
+            </form>
+          </div>
+          <div id="liveFeed" class="live-feed"></div>
+        </section>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
