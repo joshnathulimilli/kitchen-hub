@@ -14,8 +14,8 @@ const paymentSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ['stripe', 'cod', 'mock'],
-      default: 'stripe'
+      enum: ['razorpay', 'cod', 'mock'],
+      default: 'razorpay'
     },
     amount: {
       type: Number,
@@ -32,6 +32,7 @@ const paymentSchema = new mongoose.Schema(
       enum: ['created', 'pending', 'succeeded', 'failed', 'refunded'],
       default: 'created'
     },
+    providerOrderId: String,
     providerPaymentId: String,
     clientSecret: String,
     metadata: {

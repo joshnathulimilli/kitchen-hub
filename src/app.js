@@ -26,9 +26,10 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
+        scriptSrc: ["'self'", 'https://checkout.razorpay.com'],
         styleSrc: ["'self'"],
         imgSrc: ["'self'", 'data:', 'https:'],
+        frameSrc: ["'self'", 'https://api.razorpay.com', 'https://checkout.razorpay.com'],
         connectSrc: ["'self'", 'ws:', 'wss:']
       }
     }

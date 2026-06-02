@@ -410,7 +410,7 @@ const swaggerDefinition = {
     '/api/payments/create': {
       post: {
         tags: ['Payments'],
-        summary: 'Create a Stripe payment intent',
+        summary: 'Create a Razorpay payment order',
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -421,7 +421,35 @@ const swaggerDefinition = {
           }
         },
         responses: {
-          201: { description: 'Payment intent created' }
+          201: { description: 'Payment order created' }
+        }
+      }
+    },
+    '/api/payments/verify': {
+      post: {
+        tags: ['Payments'],
+        summary: 'Verify a Razorpay payment',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['paymentId', 'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature'],
+                properties: {
+                  paymentId: { type: 'string' },
+                  razorpay_order_id: { type: 'string' },
+                  razorpay_payment_id: { type: 'string' },
+                  razorpay_signature: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Payment verified' },
+          400: { description: 'Verification failed' }
         }
       }
     },

@@ -8,7 +8,8 @@ services:
       PORT: 5000
       MONGO_URI: mongodb://mongo:27017/food_ordering
       JWT_SECRET: ${JWT_SECRET:-replace_with_a_long_random_secret}
-      STRIPE_SECRET: ${STRIPE_SECRET:-}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
       CLIENT_URL: ${CLIENT_URL:-http://localhost:5000}
     depends_on:
       - mongo

@@ -69,6 +69,8 @@ const escapeAttribute = (value) =>
     return entities[char];
   });
 
+const escapeHtml = escapeAttribute;
+
 const money = (value) => `Rs. ${Number(value || 0).toFixed(2)}`;
 
 const toast = (message) => {
@@ -180,10 +182,13 @@ const renderAuthMode = () => {
   els.nameField.classList.toggle('hidden', !isRegister);
   els.roleField.classList.toggle('hidden', !isRegister);
   els.authName.required = isRegister;
-  els.authSubmitBtn.textContent = isRegister ? 'Create account' : 'Login';
-  els.authHelp.textContent = isRegister
-    ? 'Register creates a new account. Use Login after the account already exists.'
-    : 'Login requires an existing account with the correct password.';
+  els.authSubmitBtn.textContent = isRegister ? 'Create account' : state.authMode === 'admin' ? 'Admin login' : 'Login';
+  els.authHelp.textContent =
+    state.authMode === 'admin'
+      ? 'Admin login uses an admin account created with npm run create-admin.'
+      : isRegister
+        ? 'Register creates a new account. Use Login after the account already exists.'
+        : 'Login requires an existing account with the correct password.';
 };
 
 const connectSocket = () => {
@@ -254,22 +259,23 @@ const renderRestaurants = (restaurants) => {
       const fallbackImage = fallbackImageFor(index);
       const cuisines = (restaurant.cuisineTypes || []).join(', ') || 'Food';
       const canDelete = state.user?.role === 'admin';
+      const ownerId = typeof restaurant.owner === 'object' ? restaurant.owner?._id : restaurant.owner;
       return `
         <article class="restaurant-card">
           <img src="${escapeAttribute(image)}" alt="${escapeAttribute(restaurant.name)}" loading="lazy" data-fallback-src="${escapeAttribute(fallbackImage)}" />
           <div class="body stack">
             <div>
-              <h3>${restaurant.name}</h3>
-              <p class="meta">${cuisines} - ${restaurant.address?.city || 'Local'}</p>
+              <h3>${escapeHtml(restaurant.name)}</h3>
+              <p class="meta">${escapeHtml(cuisines)} - ${escapeHtml(restaurant.address?.city || 'Local')}</p>
             </div>
-            <p class="meta">${restaurant.description || 'Open for orders.'}</p>
+            <p class="meta">${escapeHtml(restaurant.description || 'Open for orders.')}</p>
             <div class="item-actions">
-              <span class="status-pill">${restaurant.status}</span>
+              <span class="status-pill">${escapeHtml(restaurant.status)}</span>
               <div class="row-actions">
-                <button class="secondary-btn" type="button" data-open-menu="${restaurant._id}" data-name="${restaurant.name}" data-owner="${escapeAttribute(restaurant.owner)}">Menu</button>
+                <button class="secondary-btn" type="button" data-open-menu="${escapeAttribute(restaurant._id)}" data-name="${escapeAttribute(restaurant.name)}" data-owner="${escapeAttribute(ownerId)}">Menu</button>
                 ${
                   canDelete
-                    ? `<button class="danger-btn" type="button" data-delete-restaurant="${restaurant._id}" data-name="${restaurant.name}">Delete</button>`
+                    ? `<button class="danger-btn" type="button" data-delete-restaurant="${escapeAttribute(restaurant._id)}" data-name="${escapeAttribute(restaurant.name)}">Delete</button>`
                     : ''
                 }
               </div>
@@ -341,16 +347,16 @@ const renderMenu = (items) => {
       (item) => `
         <article class="item-row">
           <div>
-            <h3>${item.name}</h3>
-            <p class="meta">${item.category} - ${item.description || 'Freshly prepared'}</p>
+            <h3>${escapeHtml(item.name)}</h3>
+            <p class="meta">${escapeHtml(item.category)} - ${escapeHtml(item.description || 'Freshly prepared')}</p>
           </div>
           <div class="item-actions">
             <span class="price">${money(item.price)}</span>
             <div class="row-actions">
-              <button class="primary-btn" type="button" data-add-item="${item._id}">Add</button>
+              <button class="primary-btn" type="button" data-add-item="${escapeAttribute(item._id)}">Add</button>
               ${
                 canDeleteMenu
-                  ? `<button class="danger-btn" type="button" data-delete-menu-item="${item._id}" data-name="${item.name}">Delete</button>`
+                  ? `<button class="danger-btn" type="button" data-delete-menu-item="${escapeAttribute(item._id)}" data-name="${escapeAttribute(item.name)}">Delete</button>`
                   : ''
               }
             </div>
@@ -413,7 +419,7 @@ const renderCart = (cart) => {
       .map(
         (item) => `
           <article class="item-row">
-            <h3>${item.name}</h3>
+            <h3>${escapeHtml(item.name)}</h3>
             <p class="meta">Quantity ${item.quantity}</p>
             <strong>${money(item.price * item.quantity)}</strong>
           </article>
@@ -493,33 +499,33 @@ const renderOrders = (orders) => {
         <article class="order-row">
           <div class="item-actions">
             <div>
-              <h3>${order.restaurant?.name || 'Restaurant'}</h3>
-              <p class="meta">Order ID: ${order._id}${order.user?.name ? ` - ${order.user.name}` : ''}</p>
+              <h3>${escapeHtml(order.restaurant?.name || 'Restaurant')}</h3>
+              <p class="meta">Order ID: ${escapeHtml(order._id)}${order.user?.name ? ` - ${escapeHtml(order.user.name)}` : ''}</p>
             </div>
-            <span class="status-pill">${order.orderStatus}</span>
+            <span class="status-pill">${escapeHtml(order.orderStatus)}</span>
           </div>
-          <p class="meta">Kitchen: ${order.kitchenStatus} - Delivery: ${order.deliveryStatus} - Payment: ${order.paymentStatus}</p>
+          <p class="meta">Kitchen: ${escapeHtml(order.kitchenStatus)} - Delivery: ${escapeHtml(order.deliveryStatus)} - Payment: ${escapeHtml(order.paymentStatus)}</p>
           <div class="item-actions">
             <strong>${money(order.total)}</strong>
             <div class="row-actions">
               ${
                 canUpdateKitchen
-                  ? `<button class="secondary-btn" type="button" data-fill-kitchen-order="${order._id}">Kitchen</button>`
+                  ? `<button class="secondary-btn" type="button" data-fill-kitchen-order="${escapeAttribute(order._id)}">Kitchen</button>`
                   : ''
               }
               ${
                 canUpdateDelivery
-                  ? `<button class="secondary-btn" type="button" data-fill-delivery-order="${order._id}">Delivery</button>`
+                  ? `<button class="secondary-btn" type="button" data-fill-delivery-order="${escapeAttribute(order._id)}">Delivery</button>`
                   : ''
               }
               ${
                 canPay
-                  ? `<button class="primary-btn" type="button" data-pay-order="${order._id}">Pay now</button>`
+                  ? `<button class="primary-btn" type="button" data-pay-order="${escapeAttribute(order._id)}">Pay now</button>`
                   : ''
               }
               ${
                 canConfirmDelivered
-                  ? `<button class="primary-btn" type="button" data-confirm-delivered="${order._id}">Delivered</button>`
+                  ? `<button class="primary-btn" type="button" data-confirm-delivered="${escapeAttribute(order._id)}">Delivered</button>`
                   : ''
               }
             </div>
@@ -596,11 +602,50 @@ const payForOrder = async (orderId) => {
       body: JSON.stringify({ orderId })
     });
 
-    if (data.payment?.provider === 'stripe') {
-      toast('Payment started. Use the Stripe client secret to complete checkout.');
-    } else {
+    if (data.payment?.provider === 'mock') {
       toast('Payment completed');
+      loadOrders();
+      return;
     }
+
+    if (!window.Razorpay || !data.keyId || !data.razorpayOrder) {
+      throw new Error('Razorpay checkout is not ready');
+    }
+
+    const checkout = new window.Razorpay({
+      key: data.keyId,
+      amount: data.razorpayOrder.amount,
+      currency: data.razorpayOrder.currency,
+      name: 'KitchenHub',
+      description: `Order ${orderId}`,
+      order_id: data.razorpayOrder.id,
+      prefill: {
+        name: state.user?.name || '',
+        email: state.user?.email || '',
+        contact: state.user?.phone || ''
+      },
+      handler: async (response) => {
+        await api('/api/payments/verify', {
+          method: 'POST',
+          body: JSON.stringify({
+            paymentId: data.payment._id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          })
+        });
+        toast('Payment completed');
+        loadOrders();
+      },
+      modal: {
+        ondismiss: () => toast('Payment cancelled')
+      },
+      theme: {
+        color: '#556b2f'
+      }
+    });
+
+    checkout.open();
     loadOrders();
   } catch (error) {
     toast(error.message);
@@ -770,7 +815,8 @@ els.authForm.addEventListener('submit', async (event) => {
   }
 
   try {
-    const data = await api(`/api/auth/${state.authMode}`, {
+    const authEndpoint = state.authMode === 'admin' ? 'login' : state.authMode;
+    const data = await api(`/api/auth/${authEndpoint}`, {
       method: 'POST',
       body: JSON.stringify(payload)
     });

@@ -1,36 +1,68 @@
-const Stripe = require('stripe');
+const crypto = require('crypto');
+const Razorpay = require('razorpay');
 
-const createPaymentIntent = async ({ amount, currency, orderId, userId }) => {
-  if (!process.env.STRIPE_SECRET) {
+const getRazorpayConfig = () => ({
+  keyId: process.env.RAZORPAY_KEY_ID,
+  keySecret: process.env.RAZORPAY_KEY_SECRET
+});
+
+const hasRazorpayCredentials = () => {
+  const { keyId, keySecret } = getRazorpayConfig();
+  return Boolean(keyId && keySecret);
+};
+
+const createPaymentOrder = async ({ amount, currency, orderId, userId }) => {
+  if (!hasRazorpayCredentials()) {
     return {
       provider: 'mock',
-      providerPaymentId: `mock_${Date.now()}`,
+      providerOrderId: `mock_order_${Date.now()}`,
+      providerPaymentId: `mock_payment_${Date.now()}`,
       clientSecret: 'mock_client_secret_for_local_development',
+      keyId: null,
       status: 'succeeded'
     };
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET);
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: Math.round(amount * 100),
-    currency,
-    metadata: {
+  const { keyId, keySecret } = getRazorpayConfig();
+  const razorpay = new Razorpay({
+    key_id: keyId,
+    key_secret: keySecret
+  });
+
+  const razorpayOrder = await razorpay.orders.create({
+    amount: Math.round(Number(amount) * 100),
+    currency: String(currency || 'INR').toUpperCase(),
+    receipt: String(orderId),
+    notes: {
       orderId: String(orderId),
       userId: String(userId)
-    },
-    automatic_payment_methods: {
-      enabled: true
     }
   });
 
   return {
-    provider: 'stripe',
-    providerPaymentId: paymentIntent.id,
-    clientSecret: paymentIntent.client_secret,
-    status: paymentIntent.status === 'succeeded' ? 'succeeded' : 'pending'
+    provider: 'razorpay',
+    providerOrderId: razorpayOrder.id,
+    providerPaymentId: null,
+    clientSecret: null,
+    keyId,
+    status: 'pending',
+    razorpayOrder
   };
 };
 
+const verifyRazorpaySignature = ({ razorpayOrderId, razorpayPaymentId, razorpaySignature }) => {
+  const { keySecret } = getRazorpayConfig();
+  if (!keySecret) return false;
+
+  const expectedSignature = crypto
+    .createHmac('sha256', keySecret)
+    .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(razorpaySignature));
+};
+
 module.exports = {
-  createPaymentIntent
+  createPaymentOrder,
+  verifyRazorpaySignature
 };
