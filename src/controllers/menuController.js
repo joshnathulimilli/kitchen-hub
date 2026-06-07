@@ -5,18 +5,7 @@ const ApiError = require('../utils/apiError');
 const asyncHandler = require('../middlewares/asyncHandler');
 
 const createMenuItem = asyncHandler(async (req, res) => {
-  const {
-    restaurantId,
-    items,
-    name,
-    description,
-    category,
-    price,
-    imageUrl,
-    isVegetarian,
-    isAvailable,
-    preparationTimeMinutes
-  } = req.body;
+  const { restaurantId, name, description, category, price, imageUrl, isVegetarian, isAvailable, preparationTimeMinutes } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
     throw new ApiError(400, 'Enter a valid restaurant ID');
@@ -32,46 +21,61 @@ const createMenuItem = asyncHandler(async (req, res) => {
     throw new ApiError(403, 'You can add menu items only to your own restaurant');
   }
 
-  const rawItems = Array.isArray(items)
-    ? items
-    : [
-        {
-          name,
-          description,
-          category,
-          price,
-          imageUrl,
-          isVegetarian,
-          isAvailable,
-          preparationTimeMinutes
-        }
-      ];
-
-  if (!rawItems.length) {
-    throw new ApiError(400, 'At least one menu item is required');
+  if (!name || !category || typeof price === 'undefined') {
+    throw new ApiError(400, 'Name, category, and price are required');
   }
 
-  const menuItems = rawItems.map((item) => ({
+  const menuItem = await FoodItem.create({
+    restaurant: restaurant._id,
+    name,
+    description,
+    category,
+    price,
+    imageUrl,
+    isVegetarian: Boolean(isVegetarian),
+    isAvailable: typeof isAvailable === 'undefined' ? true : Boolean(isAvailable),
+    preparationTimeMinutes: Number(preparationTimeMinutes) || 20
+  });
+
+  res.status(201).json({ success: true, item: menuItem });
+});
+
+const createBulkMenuItems = asyncHandler(async (req, res) => {
+  const { restaurantId, items } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+    throw new ApiError(400, 'Enter a valid restaurant ID');
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new ApiError(400, 'Items must be a non-empty array');
+  }
+
+  const restaurant = await Restaurant.findById(restaurantId);
+  if (!restaurant || !restaurant.isActive) {
+    throw new ApiError(404, 'Restaurant not found');
+  }
+
+  const isOwner = String(restaurant.owner) === String(req.user._id);
+  if (req.user.role !== 'admin' && !isOwner) {
+    throw new ApiError(403, 'You can add menu items only to your own restaurant');
+  }
+
+  const menuItems = items.map((item) => ({
     restaurant: restaurant._id,
     name: item.name,
     description: item.description,
     category: item.category,
     price: item.price,
     imageUrl: item.imageUrl,
-    isVegetarian: item.isVegetarian,
-    isAvailable: item.isAvailable,
-    preparationTimeMinutes: item.preparationTimeMinutes
+    isVegetarian: Boolean(item.isVegetarian),
+    isAvailable: typeof item.isAvailable === 'undefined' ? true : Boolean(item.isAvailable),
+    preparationTimeMinutes: Number(item.preparationTimeMinutes) || 20
   }));
 
   const createdItems = await FoodItem.insertMany(menuItems, { ordered: true });
-  const item = createdItems[0];
 
-  res.status(201).json({
-    success: true,
-    count: createdItems.length,
-    items: createdItems,
-    item
-  });
+  res.status(201).json({ success: true, count: createdItems.length, items: createdItems });
 });
 
 const getMenuByRestaurant = asyncHandler(async (req, res) => {
@@ -138,6 +142,7 @@ const deleteMenuItem = asyncHandler(async (req, res) => {
 
 module.exports = {
   createMenuItem,
+  createBulkMenuItems,
   getMenuByRestaurant,
   getMenuItemById,
   deleteMenuItem

@@ -7,7 +7,7 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const { emitOrderUpdate, emitKitchenUpdate } = require('../services/socketService');
 
 const createOrder = asyncHandler(async (req, res) => {
-  const { deliveryAddress, deliveryFee = 40 } = req.body;
+  const { deliveryAddress, deliveryFee = 40, specialInstructions = '' } = req.body;
 
   if (!deliveryAddress?.street || !deliveryAddress?.city) {
     throw new ApiError(400, 'Delivery address with street and city is required');
@@ -30,6 +30,7 @@ const createOrder = asyncHandler(async (req, res) => {
     tax,
     total,
     deliveryAddress,
+    specialInstructions: String(specialInstructions || '').trim(),
     statusHistory: [
       {
         status: 'placed',

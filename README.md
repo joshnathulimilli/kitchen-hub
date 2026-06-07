@@ -180,3 +180,7 @@ npm start
 - Cart enforces one restaurant per checkout.
 - Orders emit live status updates for customers, restaurants, and kitchen dashboards.
 - Reviews are restricted to delivered orders and update restaurant rating averages.
+- Password reset now supports email-based reset links with a tokenized reset flow.
+- Vendors see only their own restaurant orders in the operational dashboard.
+- Orders are grouped into "Active orders" and "Delivered orders" in the UI.
+- Special order instructions are now captured and displayed on order cards.

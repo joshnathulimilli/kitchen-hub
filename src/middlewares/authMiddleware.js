@@ -29,12 +29,19 @@ const protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
-const authorize = (...roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) {
-    return next(new ApiError(403, 'You do not have permission to perform this action'));
+const authorize = (...roles) => {
+  let message = 'You do not have permission to perform this action';
+  if (roles.length > 0 && typeof roles[roles.length - 1] === 'string' && roles[roles.length - 1].includes(' ')) {
+    message = roles.pop();
   }
 
-  next();
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(new ApiError(403, message));
+    }
+
+    next();
+  };
 };
 
 module.exports = {

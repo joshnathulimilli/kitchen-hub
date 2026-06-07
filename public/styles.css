@@ -202,6 +202,24 @@ h3 {
   box-shadow: 0 10px 26px rgba(52, 69, 31, 0.08);
 }
 
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.link-btn {
+  border: none;
+  background: none;
+  color: var(--green);
+  font-weight: 700;
+  padding: 0;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
 .segmented {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

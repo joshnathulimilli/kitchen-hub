@@ -76,6 +76,11 @@ const orderSchema = new mongoose.Schema(
         default: 'India'
       }
     },
+    specialInstructions: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     orderStatus: {
       type: String,
       enum: ['placed', 'accepted', 'preparing', 'ready', 'picked_up', 'delivered', 'cancelled'],

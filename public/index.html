@@ -15,6 +15,7 @@
       <div class="header-actions">
         <span id="sessionLabel" class="session-label">Not signed in</span>
         <a class="docs-link" href="/api-docs">Swagger</a>
+        <a id="adminLoginLink" class="docs-link" href="#">Admin</a>
         <button id="logoutBtn" class="icon-btn hidden" type="button" title="Logout">Logout</button>
       </div>
     </header>
@@ -35,7 +36,6 @@
         <form id="authForm" class="form-card">
           <div class="segmented">
             <button class="segment active" type="button" data-auth-mode="login">Login</button>
-            <button class="segment" type="button" data-auth-mode="admin">Admin</button>
             <button class="segment" type="button" data-auth-mode="register">Register</button>
           </div>
           <p id="authHelp" class="meta">Login requires an existing account with the correct password.</p>
@@ -51,6 +51,9 @@
             Password
             <input id="authPassword" name="password" type="password" required placeholder="secret123" />
           </label>
+          <div class="form-footer">
+            <button id="forgotPasswordBtn" type="button" class="link-btn hidden">Forgot password?</button>
+          </div>
           <label id="roleField" class="hidden">
             Role
             <select id="authRole" name="role">
@@ -62,6 +65,55 @@
           </label>
           <button id="authSubmitBtn" class="primary-btn" type="submit">Login</button>
         </form>
+
+        <form id="forgotPasswordForm" class="form-card hidden">
+          <h3>Reset password</h3>
+          <p class="meta">Enter your account email to receive a reset link.</p>
+          <label>
+            Email
+            <input id="forgotEmail" name="email" type="email" required placeholder="your@email.com" />
+          </label>
+          <button class="primary-btn" type="submit">Send reset link</button>
+          <div class="form-footer">
+            <button id="backToLoginBtn" class="link-btn" type="button">Back to login</button>
+          </div>
+        </form>
+
+        <form id="resetPasswordForm" class="form-card hidden">
+          <h3>Set new password</h3>
+          <p class="meta">Use the token from your email and choose a new password.</p>
+          <label>
+            Reset token
+            <input id="resetToken" name="token" type="text" required placeholder="Reset token" />
+          </label>
+          <label>
+            New password
+            <input id="resetPassword" name="password" type="password" required placeholder="New password" />
+          </label>
+          <button class="primary-btn" type="submit">Reset password</button>
+          <div class="form-footer">
+            <button id="backToLoginBtn2" class="link-btn" type="button">Back to login</button>
+          </div>
+        </form>
+
+        <form id="adminLoginForm" class="form-card hidden">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2>Admin Panel</h2>
+            <p class="meta">Admin account required. Login with admin credentials.</p>
+          </div>
+          <label>
+            Email
+            <input id="adminEmail" name="email" type="email" required placeholder="admin@example.com" />
+          </label>
+          <label>
+            Password
+            <input id="adminPassword" name="password" type="password" required placeholder="secret123" />
+          </label>
+          <button class="primary-btn" type="submit">Sign in as Admin</button>
+          <div class="form-footer">
+            <button id="backToUserLoginBtn" class="link-btn" type="button">Back to user login</button>
+          </div>
+        </form>
       </section>
 
       <section id="workspace" class="workspace hidden">
@@ -69,6 +121,7 @@
           <button class="tab active" type="button" data-tab="browse">Browse</button>
           <button class="tab" type="button" data-tab="cart">Cart</button>
           <button class="tab" type="button" data-tab="orders">Orders</button>
+          <button class="tab" type="button" data-tab="support">Support</button>
           <button class="tab" type="button" data-tab="vendor">Vendor</button>
           <button class="tab" type="button" data-tab="ops">Kitchen & Delivery</button>
         </nav>
@@ -111,6 +164,10 @@
               <label>City <input name="city" required placeholder="Bengaluru" /></label>
               <label>State <input name="state" placeholder="Karnataka" /></label>
               <label>Postal code <input name="postalCode" placeholder="560001" /></label>
+              <label>
+                Special instructions
+                <textarea name="specialInstructions" placeholder="No onions, please pack sauce separately..."></textarea>
+              </label>
               <button class="primary-btn" type="submit">Place order</button>
             </form>
           </div>
@@ -143,21 +200,36 @@
               <label>Phone <input name="phone" required placeholder="+919888888888" /></label>
               <label>Street <input name="street" required placeholder="MG Road" /></label>
               <label>City <input name="city" required placeholder="Bengaluru" /></label>
-              <label>Image URL <input name="imageUrl" placeholder="https://images.unsplash.com/..." /></label>
+              <label>Image file <input name="image" type="file" accept="image/*" /></label>
+              <label>Or image URL <input name="imageUrl" placeholder="https://images.unsplash.com/..." /></label>
               <button class="primary-btn" type="submit">Create restaurant</button>
             </form>
 
             <form id="menuForm" class="form-card">
-              <h3>New menu item</h3>
-              <p id="lastRestaurantHint" class="meta">Create or select a restaurant first. Its ID stays here while you add more items.</p>
-              <label>Restaurant ID <input name="restaurantId" required placeholder="Paste restaurant _id" /></label>
-              <label>Name <input name="name" required placeholder="Paneer Butter Masala" /></label>
-              <label>Description <textarea name="description" placeholder="Creamy paneer curry"></textarea></label>
-              <label>Category <input name="category" required placeholder="Main Course" /></label>
-              <label>Price <input name="price" required type="number" min="0" step="1" placeholder="249" /></label>
-              <label>Preparation minutes <input name="preparationTimeMinutes" type="number" min="1" value="20" /></label>
+              <h3>Add menu item</h3>
+              <p id="lastRestaurantHint" class="meta">Select a restaurant to add menu items.</p>
+              <label>
+                Restaurant
+                <select name="restaurantId" required id="menuRestaurantSelect">
+                  <option value="">-- Select restaurant --</option>
+                </select>
+              </label>
+              <label>Name <input name="name" required placeholder="e.g., Paneer Butter Masala" /></label>
+              <label>Category <input name="category" required placeholder="e.g., Main Course" /></label>
+              <label>Price (₹) <input name="price" required type="number" min="0" step="1" placeholder="249" /></label>
+              <label>Description <textarea name="description" placeholder="Describe the dish..."></textarea></label>
+              <label>Preparation time (minutes) <input name="preparationTimeMinutes" type="number" min="1" value="20" /></label>
+              <label>Image <input name="image" type="file" accept="image/*" /></label>
               <label class="check-row"><input name="isVegetarian" type="checkbox" checked /> Vegetarian</label>
-              <button class="primary-btn" type="submit">Create menu item</button>
+              <button class="primary-btn" type="submit">Add menu item</button>
+              <details style="margin-top: 16px;">
+                <summary class="link-btn" style="cursor: pointer;">Bulk import (JSON)</summary>
+                <label style="margin-top: 12px;">
+                  Paste JSON array
+                  <textarea name="bulkItems" placeholder='[{"name":"Paneer","price":199,"category":"Main Course","description":"...","restaurantId":"..."}]'></textarea>
+                </label>
+                <button class="secondary-btn" type="button" id="bulkImportBtn" style="margin-top: 8px;">Import bulk items</button>
+              </details>
             </form>
           </div>
         </section>
@@ -204,6 +276,40 @@
             </form>
           </div>
           <div id="liveFeed" class="live-feed"></div>
+        </section>
+
+        <section class="tab-panel" id="supportPanel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Support</p>
+              <h2>Report an issue or request help</h2>
+              <p class="meta">Customers can file tickets here; admins can review and manage all issues from this panel.</p>
+            </div>
+            <button id="refreshSupportBtn" class="secondary-btn" type="button">Refresh</button>
+          </div>
+          <div class="two-column">
+            <form id="supportForm" class="form-card">
+              <h3>New support ticket</h3>
+              <p class="meta">Use this form to submit an order-related or service issue.</p>
+              <label>Order ID (optional)
+                <input name="orderId" placeholder="Attach order _id if relevant" />
+              </label>
+              <label>Category
+                <select name="category">
+                  <option value="order">Order</option>
+                  <option value="delivery">Delivery</option>
+                  <option value="payment">Payment</option>
+                  <option value="menu">Menu</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label>Message
+                <textarea name="message" required placeholder="Describe your issue or request"></textarea>
+              </label>
+              <button class="primary-btn" type="submit">Submit ticket</button>
+            </form>
+            <div class="stack" id="supportList"></div>
+          </div>
         </section>
       </section>
     </main>
