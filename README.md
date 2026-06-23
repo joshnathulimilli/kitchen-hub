@@ -1,209 +1,297 @@
-# Multi-Vendor Food Ordering & Kitchen Coordination API
+# Multi-Vendor Food Ordering and Kitchen Coordination API
 
-A backend API for a food ordering platform where customers can order food from multiple restaurants, vendors can manage menus and orders, kitchen staff can update preparation status, and delivery agents can track deliveries in real time.
-
-## Tech Stack
-
-* Node.js
-* Express.js
-* MongoDB & Mongoose
-* JWT Authentication
-* Socket.IO
-* Swagger
-* Stripe (Optional)
-
----
+Production-ready Node.js, Express.js, MongoDB, Mongoose, JWT, Swagger, Razorpay, and Socket.IO backend for a multi-vendor food ordering and kitchen coordination system.
 
 ## Features
 
-### Authentication
+- User registration, login, profile lookup, and password reset
+- Role-based access for `customer`, `vendor`, `kitchen`, `delivery`, and `admin`
+- Restaurant creation, listing, lookup, and admin deletion
+- Menu item creation, bulk menu creation, listing, lookup, and deletion
+- Customer cart and checkout flow
+- Customer order history
+- Operational order dashboard for vendors, kitchen staff, delivery users, and admins
+- Kitchen order status updates
+- Delivery status updates
+- Customer delivery confirmation
+- Razorpay payment creation and verification
+- Reviews for delivered orders
+- Support ticket creation and admin support management
+- Restaurant image uploads
+- Swagger API documentation
+- Live order updates with Socket.IO
+- Static frontend served from `public/`
 
-* User registration and login
-* JWT-based authentication
-* Role-based access control
-* Password reset via email
+## Tech Stack
 
-### Restaurant & Menu Management
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT authentication
+- Socket.IO
+- Razorpay
+- Swagger UI
+- Multer
+- Nodemailer
+- Docker
 
-* View restaurants
-* View restaurant menus
-* Vendor-managed restaurants and menu items
-
-### Cart & Orders
-
-* Add items to cart
-* Place orders
-* Track order status
-* View order history
-* One restaurant per checkout
-
-### Kitchen & Delivery
-
-* Kitchen staff update preparation status
-* Delivery agents update delivery status
-* Real-time order updates using Socket.IO
-
-### Reviews & Ratings
-
-* Customers can review delivered orders
-* Restaurant ratings update automatically
-
-### Payments
-
-* Stripe PaymentIntent support
-* Mock payments available for local development
-
----
-
-## Project Structure
+## Folder Structure
 
 ```text
 src/
-├── config/
-├── controllers/
-├── middlewares/
-├── models/
-├── routes/
-├── services/
-├── swagger/
-├── utils/
-├── app.js
-└── server.js
+  app.js
+  server.js
+  config/
+    db.js
+  controllers/
+    authController.js
+    cartController.js
+    deliveryController.js
+    kitchenController.js
+    menuController.js
+    orderController.js
+    paymentController.js
+    restaurantController.js
+    reviewController.js
+    supportController.js
+    uploadController.js
+  middlewares/
+    asyncHandler.js
+    authMiddleware.js
+    errorMiddleware.js
+  models/
+    Cart.js
+    FoodItem.js
+    Order.js
+    Payment.js
+    Restaurant.js
+    Review.js
+    SupportTicket.js
+    User.js
+  routes/
+    authRoutes.js
+    cartRoutes.js
+    deliveryRoutes.js
+    kitchenRoutes.js
+    menuRoutes.js
+    orderRoutes.js
+    paymentRoutes.js
+    restaurantRoutes.js
+    reviewRoutes.js
+    supportRoutes.js
+    uploadRoutes.js
+  services/
+    emailService.js
+    paymentService.js
+    socketService.js
+  swagger/
+    swagger.js
+  utils/
+    apiError.js
+    generateToken.js
 ```
 
----
+## Requirements
 
-## Installation
+- Node.js 20 or newer
+- MongoDB running locally, or a MongoDB Atlas connection string
+- npm
 
-### 1. Install Dependencies
+## Setup
+
+1. Install dependencies:
 
 ```bash
 npm install
 ```
 
-### 2. Create Environment File
-
-Create a `.env` file:
+2. Create a `.env` file in the project root:
 
 ```env
+NODE_ENV=development
 PORT=5000
 MONGO_URI=mongodb://127.0.0.1:27017/food_ordering
-JWT_SECRET=your_secret
-STRIPE_SECRET=your_stripe_secret
-CLIENT_URL=http://localhost:3000
+JWT_SECRET=change-this-secret
+CLIENT_URL=http://localhost:5000
+
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 ```
 
-### 3. Run the Server
+3. Start MongoDB if you are using a local database.
+
+4. Start the API:
 
 ```bash
 npm run dev
 ```
 
-Server URL:
+The API and frontend run at:
 
 ```text
 http://localhost:5000
 ```
 
----
-
-## API Documentation
-
-Swagger Documentation:
+Swagger documentation is available at:
 
 ```text
 http://localhost:5000/api-docs
 ```
 
----
+Health check:
 
-## Main API Routes
+```text
+GET /health
+```
 
-| Method | Endpoint                 | Description            |
-| ------ | ------------------------ | ---------------------- |
-| POST   | /api/auth/register       | Register user          |
-| POST   | /api/auth/login          | Login user             |
-| GET    | /api/restaurants         | Get restaurants        |
-| GET    | /api/restaurants/:id     | Get restaurant details |
-| GET    | /api/menu/:restaurantId  | Get menu               |
-| GET    | /api/menu/item/:id       | Get food item          |
-| POST   | /api/cart/add            | Add to cart            |
-| GET    | /api/cart                | View cart              |
-| POST   | /api/orders              | Create order           |
-| GET    | /api/orders/my-orders    | My orders              |
-| GET    | /api/orders/:id          | Order details          |
-| PUT    | /api/kitchen/status/:id  | Update kitchen status  |
-| PUT    | /api/delivery/status/:id | Update delivery status |
-| POST   | /api/payments/create     | Create payment         |
-| POST   | /api/reviews/add         | Add review             |
+## Scripts
 
----
+```bash
+npm run dev          # Start with nodemon
+npm start            # Start with node
+npm run create-admin # Create an admin user
+```
+
+## Main Routes
+
+```text
+POST   /api/auth/register
+POST   /api/auth/login
+POST   /api/auth/forgot-password
+POST   /api/auth/reset-password/:token
+GET    /api/auth/me
+
+POST   /api/restaurants
+GET    /api/restaurants
+GET    /api/restaurants/:id
+DELETE /api/restaurants/:id
+
+POST   /api/menu
+POST   /api/menu/bulk
+GET    /api/menu/:restaurantId
+GET    /api/menu/item/:id
+DELETE /api/menu/item/:id
+
+POST   /api/cart/add
+GET    /api/cart
+
+POST   /api/orders
+GET    /api/orders/my-orders
+GET    /api/orders/manage
+GET    /api/orders/:id
+PUT    /api/orders/:id/confirm-delivered
+
+PUT    /api/kitchen/status/:id
+PUT    /api/delivery/status/:id
+
+POST   /api/payments/create
+POST   /api/payments/verify
+
+POST   /api/reviews/add
+
+POST   /api/support
+GET    /api/support/my
+GET    /api/support/manage
+PUT    /api/support/:id/status
+
+POST   /api/upload/image
+```
 
 ## Authentication
 
 Protected routes require:
 
-```http
+```text
 Authorization: Bearer <jwt_token>
 ```
 
-### User Roles
+Available user roles:
 
-* customer
-* vendor
-* kitchen
-* delivery
-* admin
-
----
-
-## Real-Time Events
-
-### Join Rooms
-
-```javascript
-socket.emit("join:user", userId);
-socket.emit("join:restaurant", restaurantId);
-socket.emit("join:order", orderId);
+```text
+customer, vendor, kitchen, delivery, admin
 ```
 
-### Listen for Updates
+## Socket.IO Events
 
-```javascript
-socket.on("order:update", handler);
-socket.on("kitchen:update", handler);
+Clients can join rooms:
+
+```js
+socket.emit('join:user', userId);
+socket.emit('join:restaurant', restaurantId);
+socket.emit('join:order', orderId);
 ```
 
----
+Server emits events such as:
 
-## Deployment (Render)
+```js
+socket.on('order:update', handler);
+socket.on('kitchen:update', handler);
+```
 
-1. Push project to GitHub.
-2. Create a Render Web Service or Blueprint.
-3. Add environment variables:
+## Payment Integration
 
-   * MONGO_URI
-   * JWT_SECRET
-   * STRIPE_SECRET
-   * CLIENT_URL
-4. Deploy.
+`POST /api/payments/create` creates a Razorpay order when `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are configured.
 
-Render will automatically run:
+`POST /api/payments/verify` verifies the Razorpay payment signature after checkout.
+
+## Order Flow
+
+1. Customer registers or logs in.
+2. Customer browses restaurants and menu items.
+3. Customer adds food items to cart.
+4. Customer places an order.
+5. Payment is created and verified through Razorpay.
+6. Kitchen or vendor updates preparation status.
+7. Delivery user updates delivery status.
+8. Customer confirms delivery.
+9. Customer can add a review after delivery.
+
+## Render Deployment
+
+This project includes `render.yaml`.
+
+Deployment steps:
+
+1. Push the project to GitHub.
+2. In Render, create a new Blueprint or Web Service from the repo.
+3. Set these environment variables in Render:
+
+```text
+MONGO_URI=<your MongoDB Atlas URI>
+JWT_SECRET=<long random production secret>
+RAZORPAY_KEY_ID=<your Razorpay key id>
+RAZORPAY_KEY_SECRET=<your Razorpay key secret>
+CLIENT_URL=<your frontend URL>
+NODE_ENV=production
+```
+
+4. Deploy. Render will run:
 
 ```bash
 npm install
 npm start
 ```
 
----
+## Docker
 
-## Additional Features
+Build and run with Docker Compose:
 
-* Vendor-specific order dashboard
-* Active and delivered order grouping
-* Special order instructions
-* Delivered-order-only reviews
-* Live order tracking and notifications
+```bash
+docker compose up --build
+```
 
----
+## Notes
 
+- Restaurants and menu items are modeled for vendor and admin management.
+- Cart checkout is designed around restaurant-based ordering.
+- Orders emit live status updates for customers, restaurants, and kitchen dashboards.
+- Reviews are restricted to delivered orders and update restaurant rating averages.
+- Password reset supports email-based reset links with a tokenized reset flow.
+- Vendors see only their own restaurant orders in the operational dashboard.
+- Orders are grouped into active and delivered orders in the UI.
+- Special order instructions are captured and displayed on order cards.
+- Uploaded restaurant images are stored under `public/uploads/restaurants`.
+- Supported upload formats are JPG, JPEG, PNG, WebP, and GIF.
+- Maximum image upload size is 3 MB.
+- Do not commit real secrets or payment keys.
