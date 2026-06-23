@@ -1,186 +1,209 @@
-# Multi-Vendor Food Ordering and Kitchen Coordination API
+# Multi-Vendor Food Ordering & Kitchen Coordination API
 
-Production-ready Node.js, Express.js, MongoDB, Mongoose, JWT, Swagger, and Socket.IO backend for a multi-vendor food ordering system.
+A backend API for a food ordering platform where customers can order food from multiple restaurants, vendors can manage menus and orders, kitchen staff can update preparation status, and delivery agents can track deliveries in real time.
 
-## Folder Structure
+## Tech Stack
+
+* Node.js
+* Express.js
+* MongoDB & Mongoose
+* JWT Authentication
+* Socket.IO
+* Swagger
+* Stripe (Optional)
+
+---
+
+## Features
+
+### Authentication
+
+* User registration and login
+* JWT-based authentication
+* Role-based access control
+* Password reset via email
+
+### Restaurant & Menu Management
+
+* View restaurants
+* View restaurant menus
+* Vendor-managed restaurants and menu items
+
+### Cart & Orders
+
+* Add items to cart
+* Place orders
+* Track order status
+* View order history
+* One restaurant per checkout
+
+### Kitchen & Delivery
+
+* Kitchen staff update preparation status
+* Delivery agents update delivery status
+* Real-time order updates using Socket.IO
+
+### Reviews & Ratings
+
+* Customers can review delivered orders
+* Restaurant ratings update automatically
+
+### Payments
+
+* Stripe PaymentIntent support
+* Mock payments available for local development
+
+---
+
+## Project Structure
 
 ```text
 src/
-  app.js
-  server.js
-  config/
-    db.js
-  controllers/
-    authController.js
-    cartController.js
-    deliveryController.js
-    kitchenController.js
-    menuController.js
-    orderController.js
-    paymentController.js
-    restaurantController.js
-    reviewController.js
-  middlewares/
-    asyncHandler.js
-    authMiddleware.js
-    errorMiddleware.js
-  models/
-    Cart.js
-    FoodItem.js
-    Order.js
-    Payment.js
-    Restaurant.js
-    Review.js
-    User.js
-  routes/
-    authRoutes.js
-    cartRoutes.js
-    deliveryRoutes.js
-    kitchenRoutes.js
-    menuRoutes.js
-    orderRoutes.js
-    paymentRoutes.js
-    restaurantRoutes.js
-    reviewRoutes.js
-  services/
-    paymentService.js
-    socketService.js
-  swagger/
-    swagger.js
-  utils/
-    apiError.js
-    generateToken.js
+├── config/
+├── controllers/
+├── middlewares/
+├── models/
+├── routes/
+├── services/
+├── swagger/
+├── utils/
+├── app.js
+└── server.js
 ```
 
-## Setup
+---
 
-1. Install dependencies:
+## Installation
+
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-2. Create a `.env` file from `.env.example`:
+### 2. Create Environment File
 
-```bash
-cp .env.example .env
-```
-
-3. Use local MongoDB:
+Create a `.env` file:
 
 ```env
+PORT=5000
 MONGO_URI=mongodb://127.0.0.1:27017/food_ordering
+JWT_SECRET=your_secret
+STRIPE_SECRET=your_stripe_secret
+CLIENT_URL=http://localhost:3000
 ```
 
-4. Start the API:
+### 3. Run the Server
 
 ```bash
 npm run dev
 ```
 
-The API runs at `http://localhost:5000`.
-
-The website runs at:
+Server URL:
 
 ```text
 http://localhost:5000
 ```
 
-Swagger documentation is available at:
+---
+
+## API Documentation
+
+Swagger Documentation:
 
 ```text
 http://localhost:5000/api-docs
 ```
 
-## Main Routes
+---
 
-```text
-POST   /api/auth/register
-POST   /api/auth/login
-GET    /api/restaurants
-GET    /api/restaurants/:id
-GET    /api/menu/:restaurantId
-GET    /api/menu/item/:id
-POST   /api/cart/add
-GET    /api/cart
-POST   /api/orders
-GET    /api/orders/my-orders
-GET    /api/orders/:id
-PUT    /api/kitchen/status/:id
-PUT    /api/delivery/status/:id
-POST   /api/payments/create
-POST   /api/reviews/add
-```
+## Main API Routes
+
+| Method | Endpoint                 | Description            |
+| ------ | ------------------------ | ---------------------- |
+| POST   | /api/auth/register       | Register user          |
+| POST   | /api/auth/login          | Login user             |
+| GET    | /api/restaurants         | Get restaurants        |
+| GET    | /api/restaurants/:id     | Get restaurant details |
+| GET    | /api/menu/:restaurantId  | Get menu               |
+| GET    | /api/menu/item/:id       | Get food item          |
+| POST   | /api/cart/add            | Add to cart            |
+| GET    | /api/cart                | View cart              |
+| POST   | /api/orders              | Create order           |
+| GET    | /api/orders/my-orders    | My orders              |
+| GET    | /api/orders/:id          | Order details          |
+| PUT    | /api/kitchen/status/:id  | Update kitchen status  |
+| PUT    | /api/delivery/status/:id | Update delivery status |
+| POST   | /api/payments/create     | Create payment         |
+| POST   | /api/reviews/add         | Add review             |
+
+---
 
 ## Authentication
 
 Protected routes require:
 
-```text
+```http
 Authorization: Bearer <jwt_token>
 ```
 
-Available user roles:
+### User Roles
 
-```text
-customer, vendor, kitchen, delivery, admin
+* customer
+* vendor
+* kitchen
+* delivery
+* admin
+
+---
+
+## Real-Time Events
+
+### Join Rooms
+
+```javascript
+socket.emit("join:user", userId);
+socket.emit("join:restaurant", restaurantId);
+socket.emit("join:order", orderId);
 ```
 
-## Socket.IO Events
+### Listen for Updates
 
-Clients can join rooms:
-
-```js
-socket.emit('join:user', userId);
-socket.emit('join:restaurant', restaurantId);
-socket.emit('join:order', orderId);
+```javascript
+socket.on("order:update", handler);
+socket.on("kitchen:update", handler);
 ```
 
-Server emits:
+---
 
-```js
-socket.on('order:update', handler);
-socket.on('kitchen:update', handler);
-```
+## Deployment (Render)
 
-## Payment Integration
+1. Push project to GitHub.
+2. Create a Render Web Service or Blueprint.
+3. Add environment variables:
 
-`POST /api/payments/create` creates a Stripe PaymentIntent when `STRIPE_SECRET` is configured.
+   * MONGO_URI
+   * JWT_SECRET
+   * STRIPE_SECRET
+   * CLIENT_URL
+4. Deploy.
 
-For local development, if `STRIPE_SECRET` is empty, the API returns a mock payment object so the order flow still works.
-
-## Render Deployment
-
-This project includes `render.yaml`.
-
-Deployment steps:
-
-1. Push the project to GitHub.
-2. In Render, create a new Blueprint or Web Service from the repo.
-3. Set these environment variables in Render:
-
-```text
-MONGO_URI=<your MongoDB Atlas URI>
-JWT_SECRET=<long random production secret>
-STRIPE_SECRET=<your Stripe secret key>
-CLIENT_URL=<your frontend URL>
-NODE_ENV=production
-```
-
-4. Deploy. Render will run:
+Render will automatically run:
 
 ```bash
 npm install
 npm start
 ```
 
-## Notes
+---
 
-- Restaurants and menu items are modeled for vendor/admin management. The requested public routes read restaurants and menu items.
-- Cart enforces one restaurant per checkout.
-- Orders emit live status updates for customers, restaurants, and kitchen dashboards.
-- Reviews are restricted to delivered orders and update restaurant rating averages.
-- Password reset now supports email-based reset links with a tokenized reset flow.
-- Vendors see only their own restaurant orders in the operational dashboard.
-- Orders are grouped into "Active orders" and "Delivered orders" in the UI.
-- Special order instructions are now captured and displayed on order cards.
+## Additional Features
+
+* Vendor-specific order dashboard
+* Active and delivered order grouping
+* Special order instructions
+* Delivered-order-only reviews
+* Live order tracking and notifications
+
+---
+
