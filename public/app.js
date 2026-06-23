@@ -489,6 +489,7 @@ const renderMenu = (items) => {
     return;
   }
 
+  const canAddToCart = ['customer', 'admin'].includes(state.user?.role);
   const canDeleteMenu =
     state.user?.role === 'admin' ||
     (state.user?.role === 'vendor' && String(state.selectedRestaurantOwner || '') === String(state.user?.id || ''));
@@ -503,7 +504,11 @@ const renderMenu = (items) => {
           <div class="item-actions">
             <span class="price">${money(item.price)}</span>
             <div class="row-actions">
-              <button class="primary-btn" type="button" data-add-item="${escapeAttribute(item._id)}">Add</button>
+              ${
+                canAddToCart
+                  ? `<button class="primary-btn" type="button" data-add-item="${escapeAttribute(item._id)}">Add</button>`
+                  : ''
+              }
               ${
                 canDeleteMenu
                   ? `<button class="danger-btn" type="button" data-delete-menu-item="${escapeAttribute(item._id)}" data-name="${escapeAttribute(item.name)}">Delete</button>`
@@ -592,9 +597,9 @@ const renderSupportCard = (ticket) => {
     <article class="item-row">
       <div>
         <h3>${escapeHtml(ticket.category || 'support')}</h3>
-        <p class="meta">Ticket #${escapeHtml(ticket._id)} • ${escapeHtml(ticket.status)} • ${new Date(ticket.createdAt).toLocaleString()}</p>
+        <p class="meta">Ticket #${escapeHtml(ticket._id)} - ${escapeHtml(ticket.status)} - ${new Date(ticket.createdAt).toLocaleString()}</p>
         ${canManage ? `<p class="meta">Reported by: ${reporter}</p>` : ''}
-        ${ticket.order ? `<p class="meta">Attached order: ${escapeHtml(ticket.order._id)} • Status: ${escapeHtml(ticket.order.orderStatus || 'n/a')}</p>` : ''}
+        ${ticket.order ? `<p class="meta">Attached order: ${escapeHtml(ticket.order._id)} - Status: ${escapeHtml(ticket.order.orderStatus || 'n/a')}</p>` : ''}
       </div>
       <div class="item-actions">
         <strong>${ticket.order ? `Order ${escapeHtml(ticket.order._id)}` : 'General issue'}</strong>
@@ -697,11 +702,12 @@ const placeOrder = async (event) => {
     postalCode: form.get('postalCode'),
     country: 'India'
   };
+  const specialInstructions = String(form.get('specialInstructions') || '').trim();
 
   try {
     const data = await api('/api/orders', {
       method: 'POST',
-      body: JSON.stringify({ deliveryAddress })
+      body: JSON.stringify({ deliveryAddress, specialInstructions })
     });
     toast(`Order placed: ${data.order._id}`);
     event.currentTarget.reset();
@@ -989,6 +995,7 @@ const createRestaurant = async (event) => {
         uploadForm.append('image', file);
         const uploadResp = await fetch('/api/upload/image', {
           method: 'POST',
+          headers: { Authorization: `Bearer ${state.token}` },
           body: uploadForm
         });
         const uploadData = await uploadResp.json();
@@ -1099,6 +1106,7 @@ const updateKitchen = async (event) => {
       body: JSON.stringify({ status: form.get('status'), note: form.get('note') })
     });
     toast('Kitchen status updated');
+    loadOrders();
   } catch (error) {
     toast(error.message);
   }
@@ -1114,6 +1122,7 @@ const updateDelivery = async (event) => {
       body: JSON.stringify({ status: form.get('status'), note: form.get('note') })
     });
     toast('Delivery status updated');
+    loadOrders();
   } catch (error) {
     toast(error.message);
   }

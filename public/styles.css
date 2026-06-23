@@ -222,7 +222,7 @@ h3 {
 
 .segmented {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -472,5 +472,38 @@ textarea {
 
   .auth-copy {
     min-height: 360px;
+  }
+}
+
+@media (max-width: 560px) {
+  .shell {
+    width: min(100% - 20px, 1180px);
+    margin-top: 16px;
+  }
+
+  .docs-link,
+  .icon-btn,
+  .secondary-btn,
+  .primary-btn,
+  .segment,
+  .tab,
+  .danger-btn {
+    width: 100%;
+  }
+
+  .header-actions,
+  .tabs,
+  .item-actions,
+  .row-actions {
+    width: 100%;
+  }
+
+  .row-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .auth-copy {
+    min-height: 300px;
   }
 }
